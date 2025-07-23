@@ -1,0 +1,35 @@
+<div class="question-card" (click)="onQuestionClick()">
+  <div class="question-header">
+    <h3>{{ question.title }}</h3>
+    <div class="question-actions" *ngIf="showActions" (click)="$event.stopPropagation()">
+      <button class="btn btn-like" (click)="onLike($event)">
+        👍 {{ question.likes }}
+      </button>
+      <button class="btn btn-danger btn-sm" (click)="onDelete($event)">
+        🗑️
+      </button>
+    </div>
+  </div>
+  
+  <div class="question-body">
+    <p>{{ question.body.length > 200 ? (question.body.substring(0, 200) + '...') : question.body }}</p>
+  </div>
+  
+  <div class="question-footer">
+    <div class="tags">
+      <span *ngFor="let tag of question.tags" class="tag">
+        #{{ tag }}
+      </span>
+    </div>
+    
+    <div class="question-meta">
+      <span class="author">👤 {{ question.authorUsername }}</span>
+      <span class="stats">
+        👍 {{ question.likes }} • 
+        👁️ {{ question.views }} • 
+        💬 {{ question.answers.length }}
+      </span>
+      <span class="time">⏰ {{ getTimeAgo(question.createdAt) }}</span>
+    </div>
+  </div>
+</div>

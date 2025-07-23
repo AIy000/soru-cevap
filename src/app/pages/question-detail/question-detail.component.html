@@ -1,0 +1,231 @@
+<div class="question-detail-container" *ngIf="question">
+  <div class="container">
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+      <button class="btn-link" (click)="goBack()">← Ana Sayfa</button>
+      <span> / Soru Detayı</span>
+    </div>
+
+    <!-- Soru -->
+    <div class="question-section">
+      <div class="question-header">
+        <h1>{{ question.title }}</h1>
+        
+        <div class="question-actions" *ngIf="canDeleteQuestion() || canEditQuestion()">
+          <button *ngIf="canEditQuestion()" class="btn btn-secondary btn-sm" (click)="editQuestion()">
+            ✏️ Düzenle
+          </button>
+          <button *ngIf="canDeleteQuestion()" class="btn btn-danger btn-sm" (click)="showDeleteQuestionDialog()">
+            🗑️ Sil
+          </button>
+        </div>
+      </div>
+
+      <div class="question-meta">
+        <span class="author" (click)="navigateToProfile(question.authorUsername)">
+          👤 {{ question.authorUsername }}
+        </span>
+        <span class="time">⏰ {{ getTimeAgo(question.createdAt) }}</span>
+        <span class="views">👁️ {{ question.views }} görüntüleme</span>
+      </div>
+
+      <div class="question-body">
+        <p>{{ question.body }}</p>
+      </div>
+
+      <div class="question-footer">
+        <div class="tags">
+          <span *ngFor="let tag of question.tags" class="tag">
+            #{{ tag }}
+          </span>
+        </div>
+
+        <div class="question-stats">
+          <button 
+            class="btn btn-like"
+            (click)="likeQuestion()"
+            [disabled]="!currentUser">
+            👍 {{ question.likes }}
+          </button>
+          
+          <span class="stat">💬 {{ question.answers.length }} cevap</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cevaplar -->
+    <div class="answers-section">
+      <h2>💬 Cevaplar ({{ question.answers.length }})</h2>
+
+      <div class="answers-list">
+        <div *ngIf="question.answers.length === 0" class="no-answers">
+          <p>Henüz cevap yok. İlk cevabı siz verin!</p>
+        </div>
+
+        <div *ngFor="let answer of getSortedAnswers()" class="answer-card">
+          <div class="answer-header">
+            <div class="answer-meta">
+              <span class="author" (click)="navigateToProfile(answer.authorUsername)">
+                👤 {{ answer.authorUsername }}
+              </span>
+              <span class="time">⏰ {{ getTimeAgo(answer.createdAt) }}</span>
+            </div>
+
+            <div class="answer-badges">
+              <span *ngIf="answer.isAccepted" class="badge badge-accepted">
+                ✅ Kabul Edildi
+              </span>
+            </div>
+          </div>
+
+          <!-- Normal görünüm -->
+          <div *ngIf="editingAnswerId !== answer.id" class="answer-body">
+            <p>{{ answer.body }}</p>
+          </div>
+
+          <!-- Düzenleme modu -->
+          <div *ngIf="editingAnswerId === answer.id" class="answer-edit">
+            <textarea 
+              [(ngModel)]="editAnswerText"
+              class="form-control"
+              rows="4"
+              placeholder="Cevabınızı düzenleyin...">
+            </textarea>
+            <div class="edit-actions">
+              <button class="btn btn-secondary btn-sm" (click)="cancelEditingAnswer()">
+                ❌ İptal
+              </button>
+              <button 
+                class="btn btn-primary btn-sm" 
+                (click)="saveEditedAnswer()"
+                [disabled]="editAnswerText.trim().length < 10">
+                💾 Kaydet
+              </button>
+            </div>
+          </div>
+
+          <div class="answer-footer">
+            <div class="answer-actions">
+              <button 
+                class="btn btn-like btn-sm"
+                (click)="likeAnswer(answer.id)"
+                [disabled]="!currentUser">
+                👍 {{ answer.likes }}
+              </button>
+
+              <button 
+                *ngIf="currentUser?.username === question?.authorUsername && !answer.isAccepted"
+                class="btn btn-accept btn-sm"
+                (click)="showAcceptAnswerDialog(answer.id)">
+                ✅ Kabul Et
+              </button>
+
+              <button 
+                *ngIf="canEditAnswer(answer) && editingAnswerId !== answer.id"
+                class="btn btn-edit btn-sm"
+                (click)="startEditingAnswer(answer.id, answer.body)">
+                ✏️ Düzenle
+              </button>
+
+              <button 
+                *ngIf="canEditAnswer(answer)"
+                class="btn btn-danger btn-sm"
+                (click)="showDeleteAnswerDialog(answer.id)">
+                🗑️ Sil
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cevap Ekleme -->
+    <div class="add-answer-section" *ngIf="currentUser">
+      <h3>💭 Cevabınızı Yazın</h3>
+      
+      <form (ngSubmit)="submitAnswer()" class="answer-form">
+        <div class="form-group">
+          <textarea 
+            [(ngModel)]="newAnswer" 
+            name="newAnswer"
+            class="form-control"
+            placeholder="Cevabınızı buraya yazın... (En az 10 karakter)"
+            rows="6"
+            [disabled]="isSubmittingAnswer">
+          </textarea>
+          <div class="character-count">
+            {{ newAnswer.trim().length }} / minimum 10 karakter
+          </div>
+        </div>
+
+        <div class="alert alert-danger" *ngIf="errorMessage">
+          {{ errorMessage }}
+        </div>
+
+        <div class="form-actions">
+          <button 
+            type="submit" 
+            class="btn btn-primary"
+            [disabled]="isSubmittingAnswer || newAnswer.trim().length < 10">
+            <span *ngIf="isSubmittingAnswer">⏳ Gönderiliyor...</span>
+            <span *ngIf="!isSubmittingAnswer">🚀 Cevabı Gönder</span>
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Giriş Daveti -->
+    <div class="login-prompt" *ngIf="!currentUser">
+      <div class="login-card">
+        <h3>💡 Cevap vermek için giriş yapın</h3>
+        <p>Sorulara cevap verebilmek ve beğeni yapabilmek için hesabınıza giriş yapmanız gerekiyor.</p>
+        <a routerLink="/login" class="btn btn-primary">Giriş Yap</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm Dialogs -->
+  <app-confirm-dialog
+    [isOpen]="showDeleteDialog"
+    title="Soruyu Sil"
+    message="Bu soruyu silmek istediğinizden emin misiniz? Bu işlem geri alınamaz."
+    confirmText="Evet, Sil"
+    cancelText="İptal"
+    type="danger"
+    (confirmed)="deleteQuestion()"
+    (cancelled)="showDeleteDialog = false">
+  </app-confirm-dialog>
+
+  <app-confirm-dialog
+    [isOpen]="showAcceptDialog"
+    title="Cevabı Kabul Et"
+    message="Bu cevabı kabul etmek istediğinizden emin misiniz? Kabul edilen cevap, sorunun en iyi cevabı olarak işaretlenecektir."
+    confirmText="Evet, Kabul Et"
+    cancelText="İptal"
+    type="info"
+    (confirmed)="acceptAnswer()"
+    (cancelled)="showAcceptDialog = false">
+  </app-confirm-dialog>
+
+  <app-confirm-dialog
+    [isOpen]="showDeleteAnswerConfirm"
+    title="Cevabı Sil"
+    message="Bu cevabı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz."
+    confirmText="Evet, Sil"
+    cancelText="İptal"
+    type="danger"
+    (confirmed)="deleteAnswer()"
+    (cancelled)="showDeleteAnswerConfirm = false">
+  </app-confirm-dialog>
+</div>
+
+<!-- Soru bulunamadı -->
+<div class="not-found" *ngIf="!question">
+  <div class="container">
+    <div class="not-found-content">
+      <h2>😞 Soru Bulunamadı</h2>
+      <p>Aradığınız soru bulunamadı veya silinmiş olabilir.</p>
+      <button class="btn btn-primary" (click)="goBack()">Ana Sayfaya Dön</button>
+    </div>
+  </div>
+</div>

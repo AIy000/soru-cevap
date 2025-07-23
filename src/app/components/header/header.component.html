@@ -1,0 +1,39 @@
+<header class="main-header">
+  <nav class="navbar">
+    <div class="container">
+      <div class="nav-brand">
+        <a routerLink="/home" class="brand-link">
+          <h2>💬 Soru-Cevap Platformu</h2>
+        </a>
+      </div>
+
+      <div class="nav-menu">
+        <ul class="nav-links">
+          <li><a routerLink="/home" routerLinkActive="active">Ana Sayfa</a></li>
+          <li *ngIf="currentUser"><a routerLink="/ask" routerLinkActive="active">Soru Sor</a></li>
+          <li *ngIf="currentUser && currentUser.role === 'moderator'">
+            <a routerLink="/moderation" routerLinkActive="active">Moderasyon</a>
+          </li>
+        </ul>
+
+        <div class="user-section">
+          <ng-container *ngIf="currentUser; else loginSection">
+            <div class="user-info">
+              <span class="username" (click)="navigateToProfile()">
+                👤 {{ currentUser.username }}
+              </span>
+              <span class="reputation">🏆 {{ currentUser.reputation }}</span>
+              <button class="btn btn-outline" (click)="logout()">Çıkış</button>
+            </div>
+          </ng-container>
+          
+          <ng-template #loginSection>
+            <div class="auth-buttons">
+              <a routerLink="/login" class="btn btn-primary">Giriş Yap</a>
+            </div>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+  </nav>
+</header>

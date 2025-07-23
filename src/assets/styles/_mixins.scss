@@ -1,0 +1,22 @@
+@mixin button-style($bg-color, $text-color: white) {
+  background-color: $bg-color;
+  color: $text-color;
+  border: none;
+  padding: $spacing-sm $spacing-md;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
+}
+
+@mixin card-style {
+  background: $card-background;
+  border-radius: 8px;
+  box-shadow: $shadow;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+}

@@ -1,0 +1,81 @@
+<div class="login-container">
+  <div class="login-card">
+    <div class="login-header">
+      <h2>{{ isRegisterMode ? 'Hesap Oluştur' : 'Giriş Yap' }}</h2>
+      <p>{{ isRegisterMode ? 'Platforma katılın ve soru sormaya başlayın!' : 'Hesabınıza giriş yapın' }}</p>
+    </div>
+
+    <form (ngSubmit)="onSubmit()" class="login-form">
+      <div class="form-group">
+        <label for="username">Kullanıcı Adı</label>
+        <input 
+          type="text" 
+          id="username" 
+          [(ngModel)]="username" 
+          name="username"
+          class="form-control"
+          placeholder="Kullanıcı adınızı girin"
+          required>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Şifre</label>
+        <input 
+          type="password" 
+          id="password" 
+          [(ngModel)]="password" 
+          name="password"
+          class="form-control"
+          placeholder="Şifrenizi girin"
+          required>
+      </div>
+
+      <div class="form-group" *ngIf="isRegisterMode">
+        <label for="confirmPassword">Şifre Tekrar</label>
+        <input 
+          type="password" 
+          id="confirmPassword" 
+          [(ngModel)]="confirmPassword" 
+          name="confirmPassword"
+          class="form-control"
+          placeholder="Şifrenizi tekrar girin"
+          required>
+      </div>
+
+      <div class="alert alert-danger" *ngIf="errorMessage">
+        {{ errorMessage }}
+      </div>
+
+      <div class="alert alert-success" *ngIf="successMessage">
+        {{ successMessage }}
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-full">
+        {{ isRegisterMode ? 'Hesap Oluştur' : 'Giriş Yap' }}
+      </button>
+    </form>
+
+    <div class="login-footer">
+      <p>
+        {{ isRegisterMode ? 'Zaten hesabınız var mı?' : 'Hesabınız yok mu?' }}
+        <button type="button" class="btn-link" (click)="toggleMode()">
+          {{ isRegisterMode ? 'Giriş Yap' : 'Hesap Oluştur' }}
+        </button>
+      </p>
+    </div>
+
+    <!-- Demo Hesaplar -->
+    <div class="demo-section" *ngIf="!isRegisterMode">
+      <hr>
+      <h4>Demo Hesapları</h4>
+      <div class="demo-buttons">
+        <button class="btn btn-outline" (click)="loginAsDemo('admin')">
+          👑 Moderatör Girişi
+        </button>
+        <button class="btn btn-outline" (click)="loginAsDemo('user')">
+          👤 Kullanıcı Girişi
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

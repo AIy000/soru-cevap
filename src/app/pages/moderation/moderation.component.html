@@ -1,0 +1,189 @@
+<div class="moderation-container">
+  <div class="container">
+    <!-- Başlık -->
+    <div class="page-header">
+      <h1>👑 Moderasyon Paneli</h1>
+      <p>Platform içeriğini yönetin ve kullanıcıları takip edin</p>
+    </div>
+
+    <!-- İstatistikler -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">❓</div>
+        <div class="stat-info">
+          <div class="stat-number">{{ questions.length }}</div>
+          <div class="stat-label">Toplam Soru</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">💬</div>
+        <div class="stat-info">
+          <div class="stat-number">{{ getTotalAnswers() }}</div>
+          <div class="stat-label">Toplam Cevap</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">👁️</div>
+        <div class="stat-info">
+          <div class="stat-number">{{ getTotalViews() }}</div>
+          <div class="stat-label">Toplam Görüntüleme</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">👤</div>
+        <div class="stat-info">
+          <div class="stat-number">{{ users.length }}</div>
+          <div class="stat-label">Kayıtlı Kullanıcı</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">👍</div>
+        <div class="stat-info">
+          <div class="stat-number">{{ getTotalLikes() }}</div>
+          <div class="stat-label">Toplam Beğeni</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sekme Menüsü -->
+    <div class="moderation-tabs">
+      <button 
+        class="tab-button"
+        [class.active]="activeTab === 'questions'"
+        (click)="setActiveTab('questions')">
+        🗂️ Sorular ({{ questions.length }})
+      </button>
+      
+      <button 
+        class="tab-button"
+        [class.active]="activeTab === 'users'"
+        (click)="setActiveTab('users')">
+        👥 Kullanıcılar ({{ users.length }})
+      </button>
+    </div>
+
+    <!-- Sekme İçeriği -->
+    <div class="tab-content">
+      <!-- Sorular Sekmesi -->
+      <div *ngIf="activeTab === 'questions'" class="questions-tab">
+        <div class="section-header">
+          <h3>📋 Tüm Sorular</h3>
+          <p>Platform üzerindeki tüm soruları yönetin</p>
+        </div>
+
+        <div *ngIf="questions.length === 0" class="empty-state">
+          <p>Henüz soru bulunmuyor.</p>
+        </div>
+
+        <div *ngFor="let question of questions" class="moderation-card">
+          <div class="card-header">
+            <div class="question-info">
+              <h4 routerLink="/question/{{ question.id }}">{{ question.title }}</h4>
+              <div class="question-meta">
+                <span class="author">👤 {{ question.authorUsername }}</span>
+                <span class="time">⏰ {{ getTimeAgo(question.createdAt) }}</span>
+              </div>
+            </div>
+
+            <div class="card-actions">
+              <button 
+                class="btn btn-secondary btn-sm"
+                (click)="editQuestion(question.id)">
+                ✏️ Düzenle
+              </button>
+              <button 
+                class="btn btn-danger btn-sm"
+                (click)="showDeleteQuestionDialog(question.id, question.title)">
+                🗑️ Sil
+              </button>
+            </div>
+          </div>
+
+          <div class="card-body">
+            <p>{{ question.body.length > 200 ? (question.body.substring(0, 200) + '...') : question.body }}</p>
+          </div>
+
+          <div class="card-footer">
+            <div class="tags">
+              <span *ngFor="let tag of question.tags" class="tag">#{{ tag }}</span>
+            </div>
+
+            <div class="question-stats">
+              <span class="stat">👍 {{ question.likes }}</span>
+              <span class="stat">👁️ {{ question.views }}</span>
+              <span class="stat">💬 {{ question.answers.length }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Kullanıcılar Sekmesi -->
+      <div *ngIf="activeTab === 'users'" class="users-tab">
+        <div class="section-header">
+          <h3>👥 Kullanıcı Listesi</h3>
+          <p>Platform kullanıcılarını ve istatistiklerini görüntüleyin</p>
+        </div>
+
+        <div class="users-grid">
+          <div *ngFor="let user of users" class="user-card">
+            <div class="user-avatar">
+              <div class="avatar-circle">
+                {{ user.username.charAt(0).toUpperCase() }}
+              </div>
+            </div>
+
+            <div class="user-info">
+              <h4 routerLink="/profile/{{ user.username }}">{{ user.username }}</h4>
+              
+              <div class="user-role">
+                <span class="role-badge" [ngClass]="{'moderator': user.role === 'moderator', 'normal': user.role === 'normal'}">
+                  {{ user.role === 'moderator' ? '👑 Moderatör' : '👤 Kullanıcı' }}
+                </span>
+              </div>
+
+              <div class="user-stats">
+                <div class="user-stat">
+                  <span class="stat-value">{{ user.reputation }}</span>
+                  <span class="stat-label">Puan</span>
+                </div>
+                <div class="user-stat">
+                  <span class="stat-value">{{ user.badges.length }}</span>
+                  <span class="stat-label">Rozet</span>
+                </div>
+              </div>
+
+              <div class="user-badges">
+                <span *ngFor="let badge of user.badges.slice(0, 3)" class="badge">
+                  🏆 {{ badge }}
+                </span>
+                <span *ngIf="user.badges.length > 3" class="more-badges">
+                  +{{ user.badges.length - 3 }} more
+                </span>
+              </div>
+
+              <div class="join-date">
+                📅 {{ getTimeAgo(user.createdAt) }} katıldı
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm Dialog -->
+  <app-confirm-dialog
+    [isOpen]="showDeleteDialog"
+    title="Soruyu Sil"
+    [message]="'&quot;' + selectedQuestionTitle + '&quot; adlı soruyu silmek istediğinizden emin misiniz? Bu işlem geri alınamaz ve tüm cevaplar da silinecektir.'"
+    confirmText="Evet, Sil"
+    cancelText="İptal"
+    type="danger"
+    (confirmed)="deleteQuestion()"
+    (cancelled)="showDeleteDialog = false">
+  </app-confirm-dialog>
+</div>

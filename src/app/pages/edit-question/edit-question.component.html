@@ -1,0 +1,136 @@
+<div class="edit-question-container" *ngIf="question">
+  <div class="container">
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+      <button class="btn-link" (click)="goBack()">← Geri Dön</button>
+      <span> / Soru Düzenle</span>
+    </div>
+
+    <div class="page-header">
+      <h1>✏️ Soru Düzenle</h1>
+      <p>Sorunuzu güncelleyin ve iyileştirin</p>
+    </div>
+
+    <div class="edit-form-container">
+      <form (ngSubmit)="onSubmit()" class="edit-form">
+        <!-- Soru Başlığı -->
+        <div class="form-group">
+          <label for="title">
+            <span class="required">*</span> Soru Başlığı
+            <small>({{ getCharacterCount(title) }}/{{ title.length > 0 ? '∞' : 'min 10' }})</small>
+          </label>
+          <input 
+            type="text" 
+            id="title" 
+            [(ngModel)]="title" 
+            name="title"
+            class="form-control"
+            [class.error]="title.length > 0 && title.trim().length < 10"
+            [class.success]="title.trim().length >= 10"
+            placeholder="Sorunuzu özetleyen net bir başlık yazın..."
+            required>
+          <div class="field-help">
+            Başlığınız net ve açıklayıcı olmalı. Örn: "Angular'da component'ler arası veri nasıl paylaşılır?"
+          </div>
+        </div>
+
+        <!-- Soru Açıklaması -->
+        <div class="form-group">
+          <label for="body">
+            <span class="required">*</span> Soru Açıklaması
+            <small>({{ getCharacterCount(body) }}/{{ body.length > 0 ? '∞' : 'min 20' }})</small>
+          </label>
+          <textarea 
+            id="body" 
+            [(ngModel)]="body" 
+            name="body"
+            class="form-control textarea"
+            [class.error]="body.length > 0 && body.trim().length < 20"
+            [class.success]="body.trim().length >= 20"
+            placeholder="Sorununuzu detaylı bir şekilde açıklayın..."
+            rows="8"
+            required></textarea>
+          <div class="field-help">
+            Sorununuzu mümkün olduğunca detaylı açıklayın. Kod örnekleri, hata mesajları ve denediğiniz çözümleri ekleyin.
+          </div>
+        </div>
+
+        <!-- Etiketler -->
+        <div class="form-group">
+          <label for="tags">
+            Etiketler <small>(En fazla 5 adet, virgülle ayırın)</small>
+          </label>
+          <input 
+            type="text" 
+            id="tags" 
+            [(ngModel)]="tags" 
+            name="tags"
+            class="form-control"
+            placeholder="Örn: angular, typescript, component"
+            maxlength="200">
+          
+          <!-- Mevcut Etiketler -->
+          <div class="current-tags" *ngIf="getCurrentTags().length > 0">
+            <span class="current-tags-label">Seçili etiketler:</span>
+            <span *ngFor="let tag of getCurrentTags()" class="tag current-tag">
+              #{{ tag }}
+              <button type="button" (click)="removeSuggestedTag(tag)" class="remove-tag">×</button>
+            </span>
+          </div>
+
+          <!-- Önerilen Etiketler -->
+          <div class="suggested-tags">
+            <span class="suggested-tags-label">Popüler etiketler:</span>
+            <button 
+              type="button"
+              *ngFor="let tag of suggestedTags" 
+              class="tag suggested-tag"
+              [class.selected]="isTagSelected(tag)"
+              [disabled]="!isTagSelected(tag) && getCurrentTags().length >= 5"
+              (click)="addSuggestedTag(tag)">
+              #{{ tag }}
+            </button>
+          </div>
+          
+          <div class="field-help">
+            Etiketler sorunuzun kategorisini belirtir ve diğer kullanıcıların bulmasını kolaylaştırır.
+          </div>
+        </div>
+
+        <!-- Hata Mesajı -->
+        <div class="alert alert-danger" *ngIf="errorMessage">
+          {{ errorMessage }}
+        </div>
+
+        <!-- Form Buttons -->
+        <div class="form-actions">
+          <button 
+            type="button" 
+            class="btn btn-secondary"
+            (click)="goBack()">
+            ← İptal
+          </button>
+          
+          <button 
+            type="submit" 
+            class="btn btn-primary"
+            [disabled]="isSubmitting || title.trim().length < 10 || body.trim().length < 20">
+            <span *ngIf="isSubmitting">⏳ Güncelleniyor...</span>
+            <span *ngIf="!isSubmitting">💾 Güncelle</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Soru bulunamadı veya yetki yok -->
+<div class="not-found" *ngIf="!question">
+  <div class="container">
+    <div class="not-found-content">
+      <h2>😞 Soru Bulunamadı veya Yetkiniz Yok</h2>
+      <p>Düzenlemek istediğiniz soru bulunamadı veya bu işlem için yetkiniz bulunmuyor.</p>
+      <button class="btn btn-primary" routerLink="/home">Ana Sayfaya Dön</button>
+    </div>
+  </div>
+</div>

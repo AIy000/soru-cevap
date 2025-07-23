@@ -1,0 +1,149 @@
+<div class="ask-question-container">
+  <div class="container">
+    <div class="page-header">
+      <h1>❓ Yeni Soru Sor</h1>
+      <p>Topluluktan yardım alın! Sorunuzu detaylı bir şekilde açıklayın.</p>
+    </div>
+
+    <div class="question-form-container">
+      <form (ngSubmit)="onSubmit()" class="question-form">
+        <!-- Soru Başlığı -->
+        <div class="form-group">
+          <label for="title">
+            <span class="required">*</span> Soru Başlığı
+            <small>({{ getCharacterCount(title) }}/{{ title.length > 0 ? '∞' : 'min 10' }})</small>
+          </label>
+          <input 
+            type="text" 
+            id="title" 
+            [(ngModel)]="title" 
+            name="title"
+            class="form-control"
+            [class.error]="title.length > 0 && title.trim().length < 10"
+            [class.success]="title.trim().length >= 10"
+            placeholder="Sorunuzu özetleyen net bir başlık yazın..."
+            required>
+          <div class="field-help">
+            Başlığınız net ve açıklayıcı olmalı. Örn: "Angular'da component'ler arası veri nasıl paylaşılır?"
+          </div>
+        </div>
+
+        <!-- Soru Açıklaması -->
+        <div class="form-group">
+          <label for="body">
+            <span class="required">*</span> Soru Açıklaması
+            <small>({{ getCharacterCount(body) }}/{{ body.length > 0 ? '∞' : 'min 20' }})</small>
+          </label>
+          <textarea 
+            id="body" 
+            [(ngModel)]="body" 
+            name="body"
+            class="form-control textarea"
+            [class.error]="body.length > 0 && body.trim().length < 20"
+            [class.success]="body.trim().length >= 20"
+            placeholder="Sorununuzu detaylı bir şekilde açıklayın. Ne yapmaya çalışıyorsunuz? Hangi hatayı alıyorsunuz? Denediğiniz çözümler neler?"
+            rows="8"
+            required></textarea>
+          <div class="field-help">
+            Sorununuzu mümkün olduğunca detaylı açıklayın. Kod örnekleri, hata mesajları ve denediğiniz çözümleri ekleyin.
+          </div>
+        </div>
+
+        <!-- Etiketler -->
+        <div class="form-group">
+          <label for="tags">
+            Etiketler <small>(En fazla 5 adet, virgülle ayırın)</small>
+          </label>
+          <input 
+            type="text" 
+            id="tags" 
+            [(ngModel)]="tags" 
+            name="tags"
+            class="form-control"
+            placeholder="Örn: angular, typescript, component"
+            maxlength="200">
+          
+          <!-- Mevcut Etiketler -->
+          <div class="current-tags" *ngIf="getCurrentTags().length > 0">
+            <span class="current-tags-label">Seçili etiketler:</span>
+            <span *ngFor="let tag of getCurrentTags()" class="tag current-tag">
+              #{{ tag }}
+              <button type="button" (click)="removeSuggestedTag(tag)" class="remove-tag">×</button>
+            </span>
+          </div>
+
+          <!-- Önerilen Etiketler -->
+          <div class="suggested-tags">
+            <span class="suggested-tags-label">Popüler etiketler:</span>
+            <button 
+              type="button"
+              *ngFor="let tag of suggestedTags" 
+              class="tag suggested-tag"
+              [class.selected]="isTagSelected(tag)"
+              [disabled]="!isTagSelected(tag) && getCurrentTags().length >= 5"
+              (click)="addSuggestedTag(tag)">
+              #{{ tag }}
+            </button>
+          </div>
+          
+          <div class="field-help">
+            Etiketler sorunuzun kategorisini belirtir ve diğer kullanıcıların bulmasını kolaylaştırır.
+          </div>
+        </div>
+
+        <!-- Hata Mesajı -->
+        <div class="alert alert-danger" *ngIf="errorMessage">
+          {{ errorMessage }}
+        </div>
+
+        <!-- Form Buttons -->
+        <div class="form-actions">
+          <button 
+            type="button" 
+            class="btn btn-secondary"
+            routerLink="/home">
+            ← İptal
+          </button>
+          
+          <button 
+            type="submit" 
+            class="btn btn-primary"
+            [disabled]="isSubmitting || title.trim().length < 10 || body.trim().length < 20">
+            <span *ngIf="isSubmitting">⏳ Gönderiliyor...</span>
+            <span *ngIf="!isSubmitting">🚀 Soruyu Yayınla</span>
+          </button>
+        </div>
+      </form>
+
+      <!-- Yardım Paneli -->
+      <div class="help-panel">
+        <h3>💡 İyi Soru Sorma İpuçları</h3>
+        
+        <div class="tip">
+          <h4>1. Net ve açıklayıcı bir başlık yazın</h4>
+          <p>Sorunuzu özetleyen, arama yapıldığında kolayca bulunabilecek bir başlık kullanın.</p>
+        </div>
+
+        <div class="tip">
+          <h4>2. Sorununuzu detaylandırın</h4>
+          <p>Ne yapmaya çalıştığınızı, hangi sorunu yaşadığınızı ve ne beklediğinizi açıklayın.</p>
+        </div>
+
+        <div class="tip">
+          <h4>3. Denediğiniz çözümleri paylaşın</h4>
+          <p>Hangi çözümleri denediğinizi ve sonuçlarını belirtin. Bu, tekrar eden önerileri önler.</p>
+        </div>
+
+        <div class="tip">
+          <h4>4. İlgili etiketleri ekleyin</h4>
+          <p>Sorunuzla ilgili teknoloji, dil veya konu etiketlerini ekleyin.</p>
+        </div>
+
+        <div class="tip">
+          <h4>5. Kod örnekleri ekleyin</h4>
+          <p>Mümkünse sorununuzu gösteren kod parçacıkları veya hata mesajları paylaşın.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

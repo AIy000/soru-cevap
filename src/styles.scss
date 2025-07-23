@@ -1,0 +1,18 @@
+@import 'assets/styles/variables';
+@import 'assets/styles/mixins';
+@import 'assets/styles/global';
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: $background-color;
+  color: $text-color;
+  line-height: 1.6;
+}
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }

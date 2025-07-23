@@ -1,0 +1,166 @@
+<div class="profile-container" *ngIf="user">
+  <div class="container">
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+      <button class="btn-link" routerLink="/home">← Ana Sayfa</button>
+      <span> / Profil / {{ user.username }}</span>
+    </div>
+
+    <!-- Profil Başlığı -->
+    <div class="profile-header">
+      <div class="user-avatar">
+        <div class="avatar-circle">
+          {{ user.username.charAt(0).toUpperCase() }}
+        </div>
+      </div>
+      
+      <div class="user-info">
+        <h1>{{ user.username }}</h1>
+        <div class="user-role">
+          <span class="role-badge" [ngClass]="{'moderator': user.role === 'moderator', 'normal': user.role === 'normal'}">
+            {{ user.role === 'moderator' ? '👑 Moderatör' : '👤 Kullanıcı' }}
+          </span>
+        </div>
+        <div class="join-date">
+          📅 {{ getTimeAgo(user.createdAt) }} katıldı
+        </div>
+      </div>
+
+      <div class="user-stats">
+        <div class="stat-card">
+          <div class="stat-number">{{ user.reputation }}</div>
+          <div class="stat-label">Puan</div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-number">{{ userQuestions.length }}</div>
+          <div class="stat-label">Soru</div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-number">{{ userAnswers.length }}</div>
+          <div class="stat-label">Cevap</div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-number">{{ getTotalLikes() }}</div>
+          <div class="stat-label">Beğeni</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sekme Menüsü -->
+    <div class="profile-tabs">
+      <button 
+        class="tab-button"
+        [class.active]="activeTab === 'questions'"
+        (click)="setActiveTab('questions')">
+        ❓ Sorular ({{ userQuestions.length }})
+      </button>
+      
+      <button 
+        class="tab-button"
+        [class.active]="activeTab === 'answers'"
+        (click)="setActiveTab('answers')">
+        💬 Cevaplar ({{ userAnswers.length }})
+      </button>
+      
+      <button 
+        class="tab-button"
+        [class.active]="activeTab === 'badges'"
+        (click)="setActiveTab('badges')">
+        🏆 Rozetler ({{ user.badges.length }})
+      </button>
+    </div>
+
+    <!-- Sekme İçeriği -->
+    <div class="tab-content">
+      <!-- Sorular Sekmesi -->
+      <div *ngIf="activeTab === 'questions'" class="questions-tab">
+        <div *ngIf="userQuestions.length === 0" class="empty-state">
+          <p>{{ user.username === currentUser?.username ? 'Henüz soru sormadınız.' : 'Bu kullanıcı henüz soru sormadı.' }}</p>
+          <button *ngIf="user.username === currentUser?.username" routerLink="/ask" class="btn btn-primary">
+            İlk Sorunuzu Sorun
+          </button>
+        </div>
+
+        <div *ngFor="let question of userQuestions" class="content-card" (click)="navigateToQuestion(question.id)">
+          <div class="card-header">
+            <h3>{{ question.title }}</h3>
+            <div class="card-stats">
+              <span class="stat">👍 {{ question.likes }}</span>
+              <span class="stat">👁️ {{ question.views }}</span>
+              <span class="stat">💬 {{ question.answers.length }}</span>
+            </div>
+          </div>
+          
+          <div class="card-body">
+            <p>{{ question.body.length > 150 ? (question.body.substring(0, 150) + '...') : question.body }}</p>
+          </div>
+          
+          <div class="card-footer">
+            <div class="tags">
+              <span *ngFor="let tag of question.tags" class="tag">#{{ tag }}</span>
+            </div>
+            <div class="card-time">{{ getTimeAgo(question.createdAt) }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cevaplar Sekmesi -->
+      <div *ngIf="activeTab === 'answers'" class="answers-tab">
+        <div *ngIf="userAnswers.length === 0" class="empty-state">
+          <p>{{ user.username === currentUser?.username ? 'Henüz cevap vermediniz.' : 'Bu kullanıcı henüz cevap vermedi.' }}</p>
+        </div>
+
+        <div *ngFor="let answer of userAnswers" class="content-card" (click)="navigateToQuestion(answer.questionId)">
+          <div class="card-header">
+            <h3>{{ answer.questionTitle }}</h3>
+            <div class="card-stats">
+              <span class="stat">👍 {{ answer.likes }}</span>
+              <span *ngIf="answer.isAccepted" class="stat accepted">✅ Kabul Edildi</span>
+            </div>
+          </div>
+          
+          <div class="card-body">
+            <p>{{ answer.body.length > 150 ? (answer.body.substring(0, 150) + '...') : answer.body }}</p>
+          </div>
+          
+          <div class="card-footer">
+            <div class="card-time">{{ getTimeAgo(answer.createdAt) }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rozetler Sekmesi -->
+      <div *ngIf="activeTab === 'badges'" class="badges-tab">
+        <div *ngIf="user.badges.length === 0" class="empty-state">
+          <p>{{ user.username === currentUser?.username ? 'Henüz rozetiniz yok.' : 'Bu kullanıcının henüz rozeti yok.' }}</p>
+        </div>
+
+        <div class="badges-grid">
+          <div *ngFor="let badge of user.badges" class="badge-card">
+            <div class="badge-icon">🏆</div>
+            <div class="badge-name">{{ badge }}</div>
+          </div>
+        </div>
+
+        <!-- Rozet Bilgileri -->
+        <div class="badge-info">
+          <h4>🎯 Rozet Kazanma Koşulları</h4>
+          <div class="badge-requirements">
+            <div class="requirement">
+              <strong>Gümüş Rozet:</strong> 100+ puan
+            </div>
+            <div class="requirement">
+              <strong>Altın Rozet:</strong> 500+ puan
+            </div>
+            <div class="requirement">
+              <strong>Platin Rozet:</strong> 1000+ puan
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

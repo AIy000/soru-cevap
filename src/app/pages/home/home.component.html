@@ -1,0 +1,111 @@
+<div class="home-container">
+  <div class="container">
+    <!-- Hero Section -->
+    <div class="hero-section">
+      <h1>💬 Soru-Cevap Platformuna Hoş Geldiniz!</h1>
+      <p>Sorularınızı sorun, cevaplar alın ve bilgi paylaşın</p>
+      <button class="btn btn-primary btn-large" (click)="navigateToAsk()">
+        ❓ Soru Sor
+      </button>
+    </div>
+
+    <div class="main-content">
+      <!-- Sol Taraf - Sorular -->
+      <div class="questions-section">
+        <!-- Arama ve Filtreleme -->
+        <div class="search-filters">
+          <div class="search-bar">
+            <input 
+              type="text" 
+              [(ngModel)]="searchTerm"
+              (input)="onSearch()"
+              placeholder="🔍 Sorularda ara..."
+              class="form-control">
+          </div>
+          
+          <div class="sort-options">
+            <label>Sırala:</label>
+            <select [(ngModel)]="sortBy" (change)="onSortChange()" class="form-control">
+              <option value="latest">En Yeniler</option>
+              <option value="popular">En Popüler</option>
+              <option value="mostViewed">En Çok Görüntülenen</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Sorular Listesi -->
+        <div class="questions-list">
+          <div *ngIf="filteredQuestions.length === 0" class="no-questions">
+            <p>{{ searchTerm ? 'Arama kriterlerinize uygun soru bulunamadı.' : 'Henüz soru bulunmuyor.' }}</p>
+            <button *ngIf="isLoggedIn" class="btn btn-primary" (click)="navigateToAsk()">
+              İlk Soruyu Sor
+            </button>
+          </div>
+
+          <div *ngFor="let question of filteredQuestions" class="question-card" (click)="navigateToQuestion(question.id)">
+            <div class="question-header">
+              <h3>{{ question.title }}</h3>
+              <div class="question-stats">
+                <span class="stat">👍 {{ question.likes }}</span>
+                <span class="stat">👁️ {{ question.views }}</span>
+                <span class="stat">💬 {{ question.answers.length }}</span>
+              </div>
+            </div>
+            
+            <div class="question-body">
+              <p>{{ question.body.length > 200 ? (question.body.substring(0, 200) + '...') : question.body }}</p>
+            </div>
+            
+            <div class="question-footer">
+              <div class="tags">
+                <span *ngFor="let tag of question.tags" class="tag" (click)="filterByTag(tag); $event.stopPropagation()">
+                  #{{ tag }}
+                </span>
+              </div>
+              
+              <div class="question-meta">
+                <span class="author">👤 {{ question.authorUsername }}</span>
+                <span class="time">⏰ {{ getTimeAgo(question.createdAt) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sağ Taraf - Sidebar -->
+      <div class="sidebar">
+        <div class="sidebar-card">
+          <h4>🏷️ Popüler Etiketler</h4>
+          <div class="tags-cloud">
+            <span *ngFor="let tagInfo of popularTags" 
+                  class="tag clickable"
+                  [style.font-size]="(tagInfo.count * 0.2 + 0.8) + 'rem'"
+                  (click)="filterByTag(tagInfo.tag)">
+              #{{ tagInfo.tag }} ({{ tagInfo.count }})
+            </span>
+          </div>
+        </div>
+
+        <div class="sidebar-card">
+          <h4>📊 Platform İstatistikleri</h4>
+          <div class="stats">
+            <div class="stat-item">
+              <span class="stat-number">{{ questions.length }}</span>
+              <span class="stat-label">Toplam Soru</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number">{{ getTotalAnswers() }}</span>
+              <span class="stat-label">Toplam Cevap</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="sidebar-card" *ngIf="!isLoggedIn">
+          <h4>🚀 Platformda Yeni Misiniz?</h4>
+          <p>Hemen hesap oluşturun ve soru sormaya başlayın!</p>
+          <a routerLink="/login" class="btn btn-primary">Hesap Oluştur</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
